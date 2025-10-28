@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Cotações e Lista de Compra</title>
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fdf1f5;
+    color: #4a3f45;
+    margin: 0;
+    padding: 0;
+}
+header {
+    text-align: center;
+    background-color: #f8c9d4;
+    padding: 20px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+h1 {
+    color: #b03a57;
+}
+section {
+    margin: 20px auto;
+    max-width: 1000px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+button {
+    background-color: #d66b91;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 5px;
+}
+button:hover {
+    background-color: #b75276;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+th, td {
+    border: 1px solid #f1b9c8;
+    padding: 8px;
+    text-align: center;
+}
+th {
+    background-color: #f8c9d4;
+    color: #5a3c46;
+}
+tfoot {
+    background-color: #f9e5ea;
+}
+footer {
+    text-align: center;
+    margin: 30px 0 10px;
+    color: #8b6b73;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+<header>
+    <h1>💗 Sistema de Cotações e Lista de Compra</h1>
+</header>
+
+<section>
+    <h2>Etapa 1: Inserir Itens</h2>
+    <button onclick="adicionarLinha()">+ Adicionar Linha</button>
+    <button onclick="limparTabela()">🗑 Limpar Tudo</button>
+    <table id="tabelaItens">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>Marca</th>
+                <th>Quantidade</th>
+                <th>Unidade</th>
+                <th>Remover</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Etapa 2: Importar Cotações dos Fornecedores</h2>
+    <p>Preencha os valores manualmente por enquanto.</p>
+    <table id="tabelaCotacoes">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Fornecedor 1</th>
+                <th>Fornecedor 2</th>
+                <th>Fornecedor 3</th>
+                <th>Fornecedor 4</th>
+                <th>Fornecedor 5</th>
+                <th>Fornecedor 6</th>
+                <th>Fornecedor 7</th>
+                <th>Fornecedor 8</th>
+                <th>Fornecedor 9</th>
+                <th>Fornecedor 10</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Etapa 3: Análise e Lista de Compra</h2>
+    <button onclick="gerarListaCompra()">📊 Gerar Análise</button>
+    <div id="resultado"></div>
+</section>
+
+<footer>Glailton Nascimento © 2025</footer>
+
+<script>
+function adicionarLinha() {
+    const tabela = document.querySelector("#tabelaItens tbody");
+    const linha = document.createElement("tr");
+    linha.innerHTML = `
+        <td contenteditable='true'></td>
+        <td contenteditable='true'></td>
+        <td contenteditable='true'></td>
+        <td contenteditable='true'></td>
+        <td contenteditable='true'></td>
+        <td><button onclick='this.parentNode.parentNode.remove(); atualizarTabelaCotacoes();'>🗑</button></td>
+    `;
+    tabela.appendChild(linha);
+    atualizarTabelaCotacoes();
+}
+
+function limparTabela() {
+    document.querySelector("#tabelaItens tbody").innerHTML = "";
+    document.querySelector("#tabelaCotacoes tbody").innerHTML = "";
+    document.querySelector("#resultado").innerHTML = "";
+}
+
+function atualizarTabelaCotacoes() {
+    const itens = document.querySelectorAll("#tabelaItens tbody tr");
+    const corpo = document.querySelector("#tabelaCotacoes tbody");
+    corpo.innerHTML = "";
+    itens.forEach((linha, i) => {
+        const cols = linha.querySelectorAll("td");
+        const nome = cols[1].innerText || "Item " + (i + 1);
+        const qtd = cols[3].innerText || "1";
+        const nova = document.createElement("tr");
+        nova.innerHTML = `
+            <td>${nome}</td>
+            <td>${qtd}</td>
+            ${Array.from({length:10}).map(() => `<td contenteditable='true'></td>`).join('')}
+        `;
+        corpo.appendChild(nova);
+    });
+}
+
+function gerarListaCompra() {
+    const linhas = document.querySelectorAll("#tabelaCotacoes tbody tr");
+    let html = "<h3>Lista de Compra (Menores Preços)</h3><table><tr><th>Item</th><th>Melhor Fornecedor</th><th>Valor</th></tr>";
+    linhas.forEach(tr => {
+        const tds = tr.querySelectorAll("td");
+        const item = tds[0].innerText;
+        let menor = Infinity;
+        let fornecedor = "-";
+        for (let i = 2; i < tds.length; i++) {
+            const valor = parseFloat(tds[i].innerText.replace(',', '.'));
+            if (!isNaN(valor) && valor < menor) {
+                menor = valor;
+                fornecedor = "Fornecedor " + (i - 1);
+            }
+        }
+        if (menor < Infinity)
+            html += `<tr><td>${item}</td><td>${fornecedor}</td><td>R$ ${menor.toFixed(2)}</td></tr>`;
+    });
+    html += "</table>";
+    document.getElementById("resultado").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
